@@ -1,1 +1,89 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>ระบบออกบิล - ธนสิทธิ์ เซอร์วิส</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef1f5;font-family:Arial,Tahoma,sans-serif;color:#222}button,input{font:inherit}button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}.editor{width:430px;background:#fff;padding:18px;overflow:auto;border-right:1px solid #ddd}.editor h1{font-size:20px;margin:0 0 14px}
+.section{border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:12px}.section h2{font-size:15px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{margin-bottom:8px}.field label{display:block;font-size:12px;color:#555;margin-bottom:4px}.full{grid-column:1/-1}
+input{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:9px 12px;border-radius:7px;background:#e9edf2}.primary{background:#1463d8;color:#fff}.green{background:#16834b;color:#fff}.red{background:#c93636;color:#fff}
+.item-editor{display:grid;grid-template-columns:minmax(0,1fr) 65px 85px 85px 32px;gap:5px;margin-bottom:6px}.item-editor input{min-width:0}.history{margin-top:10px}.history-row{display:flex;justify-content:space-between;gap:8px;align-items:center;border-top:1px solid #eee;padding:8px 0;font-size:13px}.history-actions{display:flex;gap:4px}.history-actions button{padding:5px 7px;border-radius:5px;background:#e9edf2}
+.preview-wrap{flex:1;padding:25px;overflow:auto}.paper{width:210mm;min-height:297mm;margin:auto;background:#fff;padding:10mm;box-shadow:0 2px 15px #bbb}
+.header{text-align:center;border-bottom:2px solid #222;padding-bottom:8px}.header .name{font-size:22px;font-weight:bold}.header div{font-size:13px;line-height:1.5}
+.doc-head{display:flex;justify-content:space-between;margin:12px 0}.doc-title{font-size:21px;font-weight:bold}.info{display:grid;grid-template-columns:1fr 1fr;border:1px solid #222}.info>div{padding:6px;border-bottom:1px solid #222;font-size:13px}.info>div:nth-child(odd){border-right:1px solid #222}.info>div:nth-last-child(-n+2){border-bottom:0}
+.vehicle{margin-top:10px}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}th,td{border:1px solid #222;padding:6px}th{background:#f1f1f1;text-align:center}.num{text-align:center}.right{text-align:right}
+.totals{margin-left:auto;width:55%;margin-top:10px}.totals div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #ddd}.totals .grand{font-size:16px;font-weight:bold;border-bottom:2px solid #222}
+.signs{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:55px;text-align:center}.signline{border-top:1px solid #222;margin-top:45px;padding-top:6px}
+.ios-help{font-size:12px;color:#555;line-height:1.5;margin-top:8px;padding:8px;background:#f5f7fa;border-radius:7px}
+@media(max-width:900px){.app{display:block}.editor{width:100%;border-right:0}.preview-wrap{padding:10px;overflow:auto}}
+@media print{
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      html,body{background:#fff!important;margin:0!important;padding:0!important}
+      .editor{display:none!important}
+      .preview-wrap{padding:0!important;overflow:visible!important}
+      .paper{box-shadow:none!important;margin:0!important;width:210mm!important;min-height:297mm!important}
+      @page{size:A4 portrait;margin:0}
+    }
+@supports (-webkit-touch-callout:none){
+      input,button{font-size:16px}
+      .preview-wrap{-webkit-overflow-scrolling:touch}
+    }
+    </style></head><body>
+<div class="app"><aside class="editor">
+<h1>ระบบออกบิล</h1>
+<div class="section"><h2>จัดการบิล</h2><div class="actions">
+<button class="btn primary" id="newBtn">＋ บิลใหม่</button><button class="btn green" id="saveBtn">💾 บันทึกบิล</button><button class="btn primary" id="printBtn">📥 บันทึกเป็น PDF</button>
+</div><div class="ios-help">iPhone: กด “📥 บันทึกเป็น PDF” แล้วใช้หน้าต่างพิมพ์ของ Safari จากนั้นขยายตัวอย่างกระดาษด้วย 2 นิ้ว → แชร์ → บันทึกไปยังไฟล์</div><div class="field" style="margin-top:10px"><label>ค้นหาเลขที่บิล / ลูกค้า / ทะเบียน</label><input id="search" placeholder="พิมพ์เพื่อค้นหา..."></div><div id="history" class="history"></div></div>
 
+<div class="section"><h2>ข้อมูลบริษัท</h2><div class="grid">
+<div class="field full"><label>ชื่อบริษัท</label><input id="bname"></div><div class="field full"><label>ที่อยู่</label><input id="baddr"></div>
+<div class="field"><label>โทรศัพท์</label><input id="bphone"></div><div class="field"><label>มือถือ</label><input id="bmobile"></div>
+<div class="field full"><label>เลขประจำตัวผู้เสียภาษี</label><input id="btax"></div></div></div>
+
+<div class="section"><h2>ข้อมูลเอกสาร</h2><div class="grid"><div class="field"><label>ชื่อเอกสาร</label><input id="dtype"></div><div class="field"><label>เลขที่เอกสาร</label><input id="dno"></div><div class="field"><label>วันที่</label><input id="ddate" type="date"></div></div></div>
+<div class="section"><h2>ข้อมูลลูกค้า</h2><div class="grid"><div class="field full"><label>ชื่อลูกค้า / บริษัท</label><input id="customer"></div><div class="field full"><label>ที่อยู่</label><input id="address"></div><div class="field"><label>โทรศัพท์</label><input id="phone"></div><div class="field"><label>เลขผู้เสียภาษี</label><input id="ctax"></div></div></div>
+<div class="section"><h2>ข้อมูลรถ</h2><div class="grid"><div class="field"><label>ทะเบียน</label><input id="plate"></div><div class="field"><label>ยี่ห้อ / รุ่น</label><input id="model"></div><div class="field"><label>สี</label><input id="color"></div><div class="field"><label>เลขตัวถัง VIN</label><input id="vin"></div><div class="field"><label>เลขไมล์</label><input id="km"></div></div></div>
+<div class="section"><h2>รายการสินค้า / บริการ</h2><div id="items"></div><button class="btn green" id="addItem">＋ เพิ่มรายการ</button></div>
+<div class="section"><h2>สรุปยอด</h2><div class="grid"><div class="field"><label>ชื่อยอดก่อนภาษี</label><input id="slab"></div><div class="field"><label>ส่วนลด</label><input id="dlab"></div><div class="field"><label>จำนวนเงินส่วนลด</label><input id="discount" type="number" step=".01"></div><div class="field"><label>VAT (%)</label><input id="vat" type="number" step=".01"></div><div class="field"><label>ชื่อยอดสุทธิ</label><input id="tlab"></div><div class="field"><label>สกุลเงิน</label><input id="currency"></div></div></div>
+<div class="section"><h2>ลายเซ็น</h2><div class="grid"><div class="field"><label>ฝั่งซ้าย</label><input id="sign1"></div><div class="field"><label>ฝั่งขวา</label><input id="sign2"></div></div></div>
+<button class="btn red" id="resetBtn">รีเซ็ตข้อมูลเริ่มต้น</button>
+</aside>
+
+<main class="preview-wrap"><div class="paper" id="paper">
+<div class="header"><div class="name" id="pbname"></div><div id="pbaddr"></div><div>โทร. <span id="pbphone"></span> &nbsp; มือถือ <span id="pbmobile"></span></div><div>เลขประจำตัวผู้เสียภาษี: <span id="pbtax"></span></div></div>
+<div class="doc-head"><div class="doc-title" id="pdtype"></div><div>เลขที่: <span id="pdno"></span><br>วันที่: <span id="pdate"></span></div></div>
+<div class="info"><div><b>ลูกค้า:</b> <span id="pcustomer"></span></div><div><b>โทร:</b> <span id="pphone"></span></div><div><b>ที่อยู่:</b> <span id="paddress"></span></div><div><b>เลขผู้เสียภาษี:</b> <span id="pctax"></span></div></div>
+<div class="info vehicle"><div><b>ทะเบียน:</b> <span id="pplate"></span></div><div><b>ยี่ห้อ / รุ่น:</b> <span id="pmodel"></span></div><div><b>สี:</b> <span id="pcolor"></span></div><div><b>VIN:</b> <span id="pvin"></span></div><div><b>เลขไมล์:</b> <span id="pkm"></span></div><div></div></div>
+<table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคาต่อหน่วย</th><th>จำนวนเงิน</th></tr></thead><tbody id="prows"></tbody></table>
+<div class="totals"><div><span id="pslab"></span><span id="psub"></span></div><div><span id="pdis"></span><span id="pdiscount">0.00</span></div><div><span id="pvlab">VAT</span><span id="pvat">0.00</span></div><div class="grand"><span id="ptlab"></span><span><span id="ptotal"></span> <span id="pcurrency"></span></span></div></div>
+<div class="signs"><div><div class="signline" id="psign1"></div></div><div><div class="signline" id="psign2"></div></div></div>
+</div></main></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fields=['bname','baddr','bphone','bmobile','btax','dtype','dno','ddate','customer','address','phone','ctax','plate','model','color','vin','km','slab','dlab','discount','vat','tlab','currency','sign1','sign2'];
+const defaults={bname:'ธนสิทธิ์ เซอร์วิส',baddr:'35/12 หมู่ 15 แขวงสะพานสูง เขตสะพานสูง กรุงเทพฯ 10240',bphone:'02-735-9751',bmobile:'089-770-0241',btax:'1022782592',dtype:'ใบเสนอราคา',dno:'QT-0001',ddate:new Date().toISOString().slice(0,10),customer:'',address:'',phone:'',ctax:'',plate:'',model:'',color:'',vin:'',km:'',slab:'ยอดก่อนภาษี',dlab:'ส่วนลด',discount:0,vat:3,tlab:'ยอดสุทธิ',currency:'บาท',sign1:'ผู้เสนอราคา',sign2:'ผู้รับบริการ'};
+function setDefaults(){fields.forEach(k=>$(k).value=defaults[k]??'');$('items').innerHTML='';addItem('',1,'',0);update()}
+function money(n){return Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function addItem(name='',q=1,unit='',p=0){const row=document.createElement('div');row.className='item-editor';row.innerHTML='<input class="n" placeholder="รายการ"><input class="q" type="number" min="0" step=".01" placeholder="จำนวน"><input class="u" placeholder="หน่วย เช่น ลิตร"><input class="p" type="number" min="0" step=".01" placeholder="ราคา"><button class="red remove">×</button>';row.querySelector('.n').value=name;row.querySelector('.q').value=q;row.querySelector('.u').value=unit||'';row.querySelector('.p').value=p;$('items').appendChild(row);row.querySelectorAll('input').forEach(x=>x.addEventListener('input',update));row.querySelector('.remove').onclick=()=>{row.remove();update()};update()}
+function collect(){const d={};fields.forEach(k=>d[k]=$(k).value);d.items=[...document.querySelectorAll('.item-editor')].map(r=>({name:r.querySelector('.n').value,q:r.querySelector('.q').value,unit:r.querySelector('.u').value,p:r.querySelector('.p').value}));d.updatedAt=new Date().toISOString();return d}
+function load(d){fields.forEach(k=>$(k).value=d[k]??'');$('items').innerHTML='';(d.items||[]).forEach(x=>addItem(x.name,x.q,x.unit||'',x.p));if(!(d.items||[]).length)addItem();update()}
+function update(){const map={bname:'pbname',baddr:'pbaddr',bphone:'pbphone',bmobile:'pbmobile',btax:'pbtax',dtype:'pdtype',dno:'pdno',customer:'pcustomer',phone:'pphone',address:'paddress',ctax:'pctax',plate:'pplate',model:'pmodel',color:'pcolor',vin:'pvin',km:'pkm',slab:'pslab',dlab:'pdis',tlab:'ptlab',currency:'pcurrency',sign1:'psign1',sign2:'psign2'};Object.entries(map).forEach(([a,b])=>$(b).textContent=$(a).value);$('pdate').textContent=$('ddate').value?new Date($('ddate').value+'T00:00:00').toLocaleDateString('th-TH'):'';let sub=0;$('prows').innerHTML='';[...document.querySelectorAll('.item-editor')].forEach((r,i)=>{const n=r.querySelector('.n').value,q=Number(r.querySelector('.q').value)||0,p=Number(r.querySelector('.p').value)||0,s=q*p;sub+=s;const tr=document.createElement('tr');const unit=r.querySelector('.u').value.trim();tr.innerHTML='<td class="num">'+(i+1)+'</td><td>'+esc(n)+'</td><td class="num">'+q+(unit?' '+esc(unit):'')+'</td><td class="right">'+money(p)+'</td><td class="right">'+money(s)+'</td>';$('prows').appendChild(tr)});const dis=Number($('discount').value)||0,base=Math.max(0,sub-dis),rate=Number($('vat').value)||0,tax=base*rate/100; $('pvlab').textContent='VAT '+rate+'%';$('psub').textContent=money(sub);$('pdiscount').textContent=money(dis);$('pvat').textContent=money(tax);$('ptotal').textContent=money(base+tax)}
+function getBills(){return JSON.parse(localStorage.getItem('thanasit_bills')||'[]')}function saveBills(a){localStorage.setItem('thanasit_bills',JSON.stringify(a))}
+function saveBill(){const d=collect();if(!d.dno.trim()){alert('กรุณาระบุเลขที่เอกสาร');return}let a=getBills(),i=a.findIndex(x=>x.dno===d.dno);if(i>=0)a[i]=d;else a.unshift(d);saveBills(a);renderHistory();alert('บันทึกบิลเรียบร้อยแล้ว')}
+function renderHistory(){const q=$('search').value.toLowerCase().trim(),a=getBills().filter(x=>[x.dno,x.customer,x.plate,x.ddate].join(' ').toLowerCase().includes(q));$('history').innerHTML=a.length?a.map(x=>'<div class="history-row"><div><b>'+esc(x.dno)+'</b><br><small>'+esc(x.customer||'-')+' | '+esc(x.plate||'-')+' | '+esc(x.ddate||'')+'</small></div><div class="history-actions"><button onclick="openBill('+JSON.stringify(x.dno)+')">เปิด</button><button onclick="printBill('+JSON.stringify(x.dno)+')">PDF</button><button onclick="deleteBill('+JSON.stringify(x.dno)+')">ลบ</button></div></div>').join(''):'<small>ยังไม่มีบิลที่บันทึกไว้</small>'}
+window.openBill=no=>{const x=getBills().find(b=>b.dno===no);if(x)load(x)};window.deleteBill=no=>{if(confirm('ต้องการลบบิล '+no+' ใช่หรือไม่?')){saveBills(getBills().filter(x=>x.dno!==no));renderHistory()}};window.printBill=no=>{const x=getBills().find(b=>b.dno===no);if(x){load(x);setTimeout(printPage,100)}};
+function printPage(){
+  update();
+  document.body.classList.add('printing-now');
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){document.body.classList.remove('printing-now')},1000);
+  },120);
+}
+window.printBill=no=>{
+  const x=getBills().find(b=>b.dno===no);
+  if(x){load(x);setTimeout(printPage,150)}
+};
+fields.forEach(k=>$(k).addEventListener('input',update));$('addItem').onclick=()=>addItem();$('saveBtn').onclick=saveBill;$('printBtn').onclick=printPage;$('search').oninput=renderHistory;$('newBtn').onclick=()=>{if(confirm('เริ่มบิลใหม่หรือไม่?'))setDefaults()};$('resetBtn').onclick=()=>{if(confirm('ล้างบิลที่บันทึกไว้และกลับค่าเริ่มต้น?')){localStorage.removeItem('thanasit_bills');setDefaults();renderHistory()}};setDefaults();renderHistory();
+</script></body></html>
